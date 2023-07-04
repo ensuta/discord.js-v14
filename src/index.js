@@ -3,6 +3,10 @@ import { config } from 'dotenv';
 import { REST } from '@discordjs/rest';
 import OrderCommand from './commands/order.js';
 import RolesCommand from './commands/role.js';
+import UserCommand from './commands/user.js';
+import ChanneCommand from "./commands/channel.js";
+import BanCommand from './commands/ban.js';
+
 
 config();
 
@@ -34,7 +38,14 @@ client.on('interactionCreate', (interaction) => {
 
 async function main() {
     
-    const commands = [OrderCommand, RolesCommand];
+    const commands = [
+        OrderCommand, 
+        RolesCommand, 
+        UserCommand, 
+        ChanneCommand,
+        BanCommand
+    
+    ];
     try {
         console.log('/ commands');
         await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
