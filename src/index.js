@@ -30,7 +30,6 @@ client.on('interactionCreate', (interaction) => {
     if (interaction.isChatInputCommand()) {
         if (interaction.commandName === 'order') {
             console.log('Order Command');
-            console.log(interaction);
             const actionRowComponent = new ActionRowBuilder().setComponents(
                     new SelectMenuBuilder()
                         .setCustomId('food_options')
@@ -43,6 +42,14 @@ client.on('interactionCreate', (interaction) => {
             interaction.reply({
                 components: [actionRowComponent.toJSON()],
             });
+        }
+    }else if (interaction.isAnySelectMenu()) {
+        
+        interaction.reply({content: 'Hello!'});
+        if (interaction.customId === 'food_options') {
+            
+        }else if(interaction.customId === 'drink_options') {
+
         }
     }
 });
