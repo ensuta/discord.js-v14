@@ -1,75 +1,116 @@
-import { Client, GatewayIntentBits, Routes } from "discord.js";
 import { config } from 'dotenv';
+import {
+    ActionRowBuilder,
+    Client,
+    GatewayIntentBits,
+    InteractionType,
+    ModalBuilder,
+    Routes,
+    StringSelectMenuBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+} from 'discord.js';
 import { REST } from '@discordjs/rest';
 import OrderCommand from './commands/order.js';
 import RolesCommand from './commands/role.js';
-import UserCommand from './commands/user.js';
-import ChanneCommand from "./commands/channel.js";
+import UsersCommand from './commands/user.js';
+import ChannelsCommand from './commands/channel.js';
 import BanCommand from './commands/ban.js';
-import { ActionRowBuilder, SelectMenuBuilder } from "@discordjs/builders";
-
+import RegisterCommand from './commands/register.js';
 
 config();
 
-const client = new Client({ 
-    intents: [
-    GatewayIntentBits.Guilds, 
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-    ],
-});
 const TOKEN = process.env.TOKEN;
 const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
-const rest = new REST({version: 10,}).setToken(TOKEN);
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
+    ],
+});
+
+const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.on('ready', () => console.log(`${client.user.tag} has logged in!`));
 
 client.on('interactionCreate', (interaction) => {
     if (interaction.isChatInputCommand()) {
+        console.log('Chat Command');
         if (interaction.commandName === 'order') {
-            console.log('Order Command');
             const actionRowComponent = new ActionRowBuilder().setComponents(
-                    new SelectMenuBuilder()
-                        .setCustomId('food_options')
-                        .setOptions([
-                            {label: 'Cake', value: 'cake'}, 
-                            {label: 'Pizza', value: 'pizza'},
-                            {label: 'Sushi', value: 'sushi'},
-                        ])
-                );
+                new StringSelectMenuBuilder()
+                    .setCustomId('drink_options')
+                    .setOptions([
+                        { label: 'Cake', value: 'cake' },
+                        { label: 'Pizza', value: 'pizza' },
+                        { label: 'Sushi', value: 'sushi' },
+                    ])
+            );
             interaction.reply({
                 components: [actionRowComponent.toJSON()],
             });
-        }
-    }else if (interaction.isAnySelectMenu()) {
-        
-        interaction.reply({content: 'Hello!'});
-        if (interaction.customId === 'food_options') {
-            
-        }else if(interaction.customId === 'drink_options') {
+        } else if (interaction.commandName === 'register') {
+            const modal = new ModalBuilder()
+                .setTitle('Register User Form')
+                .setCustomId('registerUserModal')
+                .setComponents(
+                    new ActionRowBuilder().setComponents(
+                        new TextInputBuilder()
+                            .setLabel('username')
+                            .setCustomId('username')
+                            .setStyle(TextInputStyle.Short)
+                    ),
+                    new ActionRowBuilder().setComponents(
+                        new TextInputBuilder()
+                            .setLabel('email')
+                            .setCustomId('email')
+                            .setStyle(TextInputStyle.Short)
+                    ),
+                    new ActionRowBuilder().setComponents(
+                        new TextInputBuilder()
+                            .setLabel('comment')
+                            .setCustomId('comment')
+                            .setStyle(TextInputStyle.Paragraph)
+                    )
+                );
 
+            interaction.showModal(modal);
+        }
+    } else if (interaction.isAnySelectMenu()) {
+        console.log('Select Menu');
+        if (interaction.customId === 'food_options') {
+            console.log(interaction.component);
+        } else if (interaction.customId === 'drink_options') {
+        }
+    } else if (interaction.type === InteractionType.ModalSubmit) {
+        console.log('Modal Submitted...');
+        if (interaction.customId === 'registerUserModal') {
+            console.log(interaction.fields.getTextInputValue('username'));
+            interaction.reply({
+                content: 'You successfully submitted your details!',
+            });
         }
     }
 });
 
 async function main() {
-    
     const commands = [
-        OrderCommand, 
-        RolesCommand, 
-        UserCommand, 
-        ChanneCommand,
+        OrderCommand,
+        RolesCommand,
+        UsersCommand,
+        ChannelsCommand,
         BanCommand,
-        
+        RegisterCommand,
     ];
     try {
-        console.log('/ commands');
+        console.log('Started refreshing application (/) commands.');
         await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
             body: commands,
         });
-        client.login(TOKEN)
+        client.login(TOKEN);
     } catch (err) {
         console.log(err);
     }
