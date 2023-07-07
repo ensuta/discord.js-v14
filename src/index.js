@@ -1,6 +1,8 @@
 import { config } from 'dotenv';
 import {
     ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
     Client,
     GatewayIntentBits,
     InteractionType,
@@ -17,6 +19,7 @@ import UsersCommand from './commands/user.js';
 import ChannelsCommand from './commands/channel.js';
 import BanCommand from './commands/ban.js';
 import RegisterCommand from './commands/register.js';
+import ButtonCommand from './commands/button.js';
 
 config();
 
@@ -35,6 +38,30 @@ const client = new Client({
 const rest = new REST({ version: '10' }).setToken(TOKEN);
 
 client.on('ready', () => console.log(`${client.user.tag} has logged in!`));
+
+client.on('messageCreate', (m) => {
+    if (m.author.bot) return;
+
+    m.channel.send({
+        content: 'Hello, World!',
+        components: [
+            new ActionRowBuilder().setComponents(
+                new ButtonBuilder()
+                    .setCustomId('button1')
+                    .setLabel('button 1')
+                    .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder()
+                    .setCustomId('button2')
+                    .setLabel('button 2')
+                    .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                    .setLabel('button 3')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL('https://google.com/')
+            ),
+        ],
+    });
+});
 
 client.on('interactionCreate', (interaction) => {
     if (interaction.isChatInputCommand()) {
@@ -78,6 +105,26 @@ client.on('interactionCreate', (interaction) => {
                 );
 
             interaction.showModal(modal);
+        } else if (interaction.commandName === 'button') {
+            interaction.reply({
+                content: 'Button',
+                components: [
+                    new ActionRowBuilder().setComponents(
+                        new ButtonBuilder()
+                            .setCustomId('button1')
+                            .setLabel('button 1')
+                            .setStyle(ButtonStyle.Primary),
+                        new ButtonBuilder()
+                            .setCustomId('button2')
+                            .setLabel('button 2')
+                            .setStyle(ButtonStyle.Secondary),
+                        new ButtonBuilder()
+                            .setLabel('button 3')
+                            .setStyle(ButtonStyle.Link)
+                            .setURL('https://google.com/')
+                    ),
+                ]
+            });
         }
     } else if (interaction.isAnySelectMenu()) {
         console.log('Select Menu');
@@ -104,6 +151,7 @@ async function main() {
         ChannelsCommand,
         BanCommand,
         RegisterCommand,
+        ButtonCommand,
     ];
     try {
         console.log('Started refreshing application (/) commands.');
